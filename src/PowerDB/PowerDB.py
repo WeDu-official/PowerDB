@@ -265,7 +265,6 @@ class table_data_class():
         kill = 0
         if strictmode is False:
             for iu in range(limit):
-                print(iu)
                 if f'~<[{tableid};{columnid},{iu}]' in r:
                     data.append(f'~<[{tableid};{columnid},{iu}]')
                 else:
@@ -276,7 +275,6 @@ class table_data_class():
                         kill = kill + 1
         else:
             for iu in range(limit):
-                print(iu)
                 if f'~<[{tableid};{columnid},{iu}]' in r:
                     data.append(f'~<[{tableid};{columnid},{iu}]')
                 else:
