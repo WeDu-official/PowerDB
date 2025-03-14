@@ -81,6 +81,12 @@ create = create_class()
 class container_data_class():
     def __init__(self):
         pass
+    def getname(self, file: str, id:int):
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
+        if f'$<{id},' in r:
+            return inner_functions.get_the_word_inbetween(f'$<{id},'+inner_functions.get_line_of_phrase_in_text(r,f'$<{id},'), ',', '>')
     def getid(self,file:str,name:str,plogic:bool=True):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
@@ -234,6 +240,12 @@ container_data = container_data_class()
 class table_data_class():
     def __init__(self):
         pass
+    def getname(self, file: str, id:int):
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
+        if f'&<{id}^' in r:
+            return inner_functions.get_the_word_inbetween(f'&<{id}^'+inner_functions.get_line_of_phrase_in_text(r,f'&<{id}^'), '^', '>')
     def getid(self, file: str, name: str, plogic: bool = True):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
@@ -515,4 +527,34 @@ class other_class():
                 return True
             else:
                 return False
+    def FIAM(self,file:str):
+        tables_number = table_data.numbertables(file,plogic=False)
+        containers_number = container_data.numbercontainers(file,plogic=False)
+        table_info = []
+        container_info = []
+        for i in range(tables_number):
+            info = table_data.totaltable(file,i)
+            c = 0
+            r = 0
+            while True:
+                while True:
+                    if c <= info[0]:
+                        table_info.append([i,c,r])
+                        c = c + 1
+                    else:
+                        break
+                if r <= info[1]:
+                    r = r + 1
+                else:
+                    break
+        for i in range(containers_number):
+            info = container_data.numbersectors(file,i)
+            s = 0
+            while True:
+                if s <= info:
+                    container_info.append([i,s])
+                    s = s + 1
+                else:
+                    break
+        print('tables',table_info,', containers',container_info)
 other = other_class()

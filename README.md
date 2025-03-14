@@ -1,11 +1,11 @@
 <img alt="logo" src="https://github.com/user-attachments/assets/0a9537bb-746b-44b5-883b-2dcddc65d544" width=300/>
 
-**PowerDB 2.0** a DBM which is fast & easy to use for local small scale databases
+**PowerDB 2.1.0** a DBM which is fast & easy to use for local small scale databases
 
 <H3>~NEW RELEASE FEATURES(completely rebuild and new):</H3>
 
 **AN INSANE AMOUNT OF HARD WORK AND SWEAT AND BLOOD WENT INTO THIS PROJECT!**
-
+(2.0 UPDATE)
 * 1-NAMING SYSTEM FOR CONTAINERS AND TABLES *1
 * 2-DROPPING CONTAINERS AND TABLES
 * 3-WHOLE NEW SYSTEM FOR SEARCHING AND I/O FROM THE DB
@@ -19,6 +19,12 @@
 
 <code>*1:you can use the .getid function with the name to get its id and use it</code>
 
+<h5>(2.1 UPDATE)</h5>
+
+* 1-YOU CAN GET NAME OF TABLE/CONTAINER USING THE .getname (table_data/container_data) FUNCTION
+* 2-YOU CAN GET TWO LISTS (ONE FOR TABLES AND THE OTHER ONE FOR CONTAINERS)
+
+WHICH SHOW A LIST OF INNER ADDRESSES(columns,rows,sectors) USING THE .FIAM(others) FUNCTION
 
 **NOTE: THE PowerDB ONLY work in almost any operating system(\*1) which can support python 3.8 and above**
 
@@ -33,7 +39,7 @@ to help developers esp. **single developers** to deal with the database or stori
 
 to install the latest stable version use the following command
 
-<code>pip install PowerDB==2.0.0</code>
+<code>pip install PowerDB==2.1.1</code>
 
 ## Contribute
 
