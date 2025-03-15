@@ -22,8 +22,8 @@
 <h5>(2.1 UPDATE)</h5>
 
 * 1-YOU CAN GET NAME OF TABLE/CONTAINER USING THE .getname (table_data/container_data) FUNCTION
-* 2-YOU CAN GET TWO LISTS (ONE FOR TABLES AND THE OTHER ONE FOR CONTAINERS)
-
+* 2-YOU CAN CHANGE NAME OF TABLE/CONTAINER USING THE .change_name (table_data/container_data) FUNCTION
+* 3-YOU CAN GET TWO LISTS (ONE FOR TABLES AND THE OTHER ONE FOR CONTAINERS)
 WHICH SHOW A LIST OF INNER ADDRESSES(columns,rows,sectors) USING THE .FIAM(others) FUNCTION
 
 **NOTE: THE PowerDB ONLY work in almost any operating system(\*1) which can support python 3.8 and above**

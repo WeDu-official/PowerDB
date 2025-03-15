@@ -150,6 +150,23 @@ class container_data_class():
             editcontainers.close()
         else:
             pass
+    def change_name(self,file:str,new_name:str,containerid):
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
+        if other.check(file, 'container', [containerid, self.getname(file,containerid)]):
+            actdata = inner_functions.modify_line_containing_word(r,f'$<{containerid},{self.getname(file,containerid)}>',f'$<{containerid},{new_name}>')
+            rccontainers = open(file, 'w')
+            rccontainers.write('')
+            rccontainers.close()
+            editcontainers = open(file, 'w')
+            lines = actdata.split('\n')
+            non_empty_lines = [line for line in lines if line.strip() != '']
+            actdatan = '\n'.join(non_empty_lines)
+            editcontainers.write(actdatan)
+            editcontainers.close()
+        else:
+            pass
     def readsectors(self,file:str,containerid:int):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
@@ -241,15 +258,15 @@ class table_data_class():
     def __init__(self):
         pass
     def getname(self, file: str, id:int):
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         if f'&<{id}^' in r:
             return inner_functions.get_the_word_inbetween(f'&<{id}^'+inner_functions.get_line_of_phrase_in_text(r,f'&<{id}^'), '^', '>')
     def getid(self, file: str, name: str, plogic: bool = True):
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         data = ''
         i = 0
         while True:
@@ -321,9 +338,9 @@ class table_data_class():
             except ValueError:
                 return -1
     def numbertables(self,file:str,plogic:bool=True):
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         if plogic is False:
             return inner_functions.count_occurrences('&<',r)
         else:
@@ -340,7 +357,7 @@ class table_data_class():
         tableid = address[0]
         columnid = address[1]
         rowid = address[2]
-        makecontainer = open(file, 'a')
+        maketable = open(file, 'a')
         info = self.totaltable('main.pdb', tableid)
         if showmatrix:
             print(columnid,info[0])
@@ -348,19 +365,19 @@ class table_data_class():
         if not other.check(file,'cell',[tableid,columnid,rowid]):
             if columnid - info[0] <= 1:
                if rowid - info[1] <= 1:
-                  makecontainer.write(f"\n~<[{tableid};{columnid}?{rowid}],{data}>~")
+                  maketable.write(f"\n~<[{tableid};{columnid}?{rowid}],{data}>~")
         else:
             pass
-        makecontainer.close()
+        maketable.close()
     def read(self,file:str,address=None):
         if address is None:
             address = []
         tableid = address[0]
         columnid = address[1]
         rowid = address[2]
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         data = ""
         if other.check(file, 'cell', [tableid, columnid, rowid]):
             if f'~<[{tableid};{columnid}?{rowid}]' in r:
@@ -371,9 +388,9 @@ class table_data_class():
     def readcolumns(self,file:str,address=None):
         tableid = address[0]
         rowid = address[1]
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         data = []
         i = 0
         while True:
@@ -386,9 +403,9 @@ class table_data_class():
     def readrows(self,file:str,address=None):
         tableid = address[0]
         columnid = address[1]
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         data = []
         i = 0
         while True:
@@ -404,20 +421,37 @@ class table_data_class():
         tableid = address[0]
         columnid = address[1]
         rowid = address[2]
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         if other.check(file, 'cell', [tableid, columnid, rowid]):
             actdata = inner_functions.modify_line_containing_word(r,f'~<[{tableid};{columnid}?{rowid}]',f'~<[{tableid};{columnid}?{rowid}],{data}>')
-            rccontainers = open(file, 'w')
-            rccontainers.write('')
-            rccontainers.close()
-            editcontainers = open(file, 'w')
+            rctables = open(file, 'w')
+            rctables.write('')
+            rctables.close()
+            edittables = open(file, 'w')
             lines = actdata.split('\n')
             non_empty_lines = [line for line in lines if line.strip() != '']
             actdatan = '\n'.join(non_empty_lines)
-            editcontainers.write(actdatan)
-            editcontainers.close()
+            edittables.write(actdatan)
+            edittables.close()
+        else:
+            pass
+    def change_name(self,file:str,new_name:str,tableid):
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
+        if other.check(file, 'table', [tableid, self.getname(file,tableid)]):
+            actdata = inner_functions.modify_line_containing_word(r,f'&<{tableid}^{self.getname(file,tableid)}>',f'&<{tableid}^{new_name}>')
+            rctables = open(file, 'w')
+            rctables.write('')
+            rctables.close()
+            edittables = open(file, 'w')
+            lines = actdata.split('\n')
+            non_empty_lines = [line for line in lines if line.strip() != '']
+            actdatan = '\n'.join(non_empty_lines)
+            edittables.write(actdatan)
+            edittables.close()
         else:
             pass
     def delete(self,file:str,address=None):
@@ -426,20 +460,20 @@ class table_data_class():
         tableid = address[0]
         columnid = address[1]
         rowid = address[2]
-        scancontainers = open(file, 'r')
-        r = scancontainers.read()
-        scancontainers.close()
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
         if other.check(file, 'cell', [tableid, columnid, rowid]):
             actdata = inner_functions.modify_line_containing_word(r,f'~<[{tableid};{columnid}?{rowid}]',f'')
-            rccontainers = open(file, 'w')
-            rccontainers.write('')
-            rccontainers.close()
-            editcontainers = open(file, 'w')
+            rctables = open(file, 'w')
+            rctables.write('')
+            rctables.close()
+            edittables = open(file, 'w')
             lines = actdata.split('\n')
             non_empty_lines = [line for line in lines if line.strip() != '']
             actdatan = '\n'.join(non_empty_lines)
-            editcontainers.write(actdatan)
-            editcontainers.close()
+            edittables.write(actdatan)
+            edittables.close()
         else:
             pass
     def drop(self,file:str,tableid:int):
