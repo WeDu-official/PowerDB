@@ -1,3 +1,5 @@
+import os
+import openpyxl
 class inner_functions_class():
     def __init__(self):
         pass
@@ -44,6 +46,34 @@ class inner_functions_class():
             return "\n".join(lines)  # Rejoin the lines with newline characters
         else:
             return text  # Return original text if word not found
+    def group_by_element(self,input_list,index):
+        grouped_list = {}
+        for sublist in input_list:
+            second_element = sublist[index]
+            if second_element not in grouped_list:
+                grouped_list[second_element] = []
+            grouped_list[second_element].append(sublist)
+        return list(grouped_list.values())
+    def add_data_to_inner_lists(self,main_list,second_list):
+        result = []
+        second_index = 0
+
+        for inner_item in main_list:
+            if second_index < len(second_list):
+                result.append(inner_item + [second_list[second_index]])
+                second_index += 1
+            else:
+                result.append(inner_item + [None])
+                print("Warning: second_list is shorter than expected. Filling with None.")
+
+        return result
+
+    def combine_lists(self,input_list):
+        output_list = []
+        for inner_list in input_list:
+            for item in inner_list:
+                output_list.append(item)
+        return output_list
 inner_functions = inner_functions_class()
 class create_class():
     def __init__(self):
@@ -61,22 +91,29 @@ class create_class():
         scancontainers.close()
         num = inner_functions.count_occurrences('$<', r)
         makecontainer = open(file, 'a')
-        if num == 0:
-            makecontainer.write(f"\n$<0,{name}>")
+        if f',{name}>' not in r:
+            makecontainer = open(file, 'a')
+            if num == 0:
+                makecontainer.write(f"\n$<0,{name}>")
+            else:
+                makecontainer.write(f"\n$<{num},{name}>")
+            makecontainer.close()
         else:
-            makecontainer.write(f"\n$<{num},{name}>")
-        makecontainer.close()
+            pass
     def maketable(self,file:str,name:str):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
         scancontainers.close()
         num = inner_functions.count_occurrences('&<', r)
-        makecontainer = open(file, 'a')
-        if num == 0:
-            makecontainer.write(f"\n&<0^{name}>")
+        if f'^{name}>' not in r:
+            makecontainer = open(file, 'a')
+            if num == 0:
+                makecontainer.write(f"\n&<0^{name}>")
+            else:
+                makecontainer.write(f"\n&<{num}^{name}>")
+            makecontainer.close()
         else:
-            makecontainer.write(f"\n&<{num}^{name}>")
-        makecontainer.close()
+            pass
 create = create_class()
 class container_data_class():
     def __init__(self):
@@ -349,6 +386,10 @@ class table_data_class():
         return self.hcolumn(file, address[0], plogic, address[1])
     def numberrows(self,file:str,address=None,plogic:bool=True):
         return self.hrow(file, address[0], plogic, address[1])
+    def totalcolumns(self,file:str,tableid:int,plogic:bool=True):
+        return self.hcolumn(file, tableid, plogic)
+    def totalrows(self,file:str,tableid:int,plogic:bool=False):
+        return self.hrow(file, tableid, plogic)
     def totaltable(self,file:str,tableid:int,plogic:bool=True):
         return [self.hcolumn(file, tableid, plogic), self.hrow(file, tableid, plogic)]
     def insert(self,file:str,data:str,address=None,showmatrix:bool=False):
@@ -454,6 +495,46 @@ class table_data_class():
             edittables.close()
         else:
             pass
+    def all_addresses_grouping(self,file:str,tableid:int,filtermode:int):
+        #filtermode must be either 0(columns) or 1(rows)
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
+        raw = []
+        data1 = []
+        info = self.totaltable(file,tableid,False)
+        for i in range(info[0]):
+            if f'~<[{tableid};{i}' in r:
+                for iu in range(info[1]):
+                    if f'~<[{tableid};{i}?{iu}]' in r:
+                        raw.append([tableid,i,iu])
+                    else:
+                        break
+            else:
+                break
+        if filtermode < 2:
+            return inner_functions.group_by_element(raw,filtermode+1)
+        else:
+            return []
+    def all_addresses_list(self,file:str,tableid:int,totalnum:bool=False):
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
+        raw = []
+        info = self.totaltable(file,tableid,False)
+        for i in range(info[0]):
+            if f'~<[{tableid};{i}' in r:
+                for iu in range(info[1]):
+                    if f'~<[{tableid};{i}?{iu}]' in r:
+                        raw.append([tableid,i,iu])
+                    else:
+                        break
+            else:
+                break
+        if totalnum:
+            return len(raw)
+        else:
+            return raw
     def delete(self,file:str,address=None):
         if address is None:
             address = []
@@ -515,6 +596,55 @@ class table_data_class():
         actdatan = '\n'.join(non_empty_lines)
         edittables.write(actdatan)
         edittables.close()
+
+    def export_tables_to_excel(self, dbfile:str, filepath:str):
+        num_sheets = self.numbertables(dbfile, False)
+        total_items = 0
+        for table_id in range(num_sheets):
+            total_items += self.all_addresses_list(dbfile, table_id, True)
+        ata_list = []
+        raw_data = []
+        stuff_list = []
+        for main in range(num_sheets):
+            raw_data.append(self.all_addresses_list('main.pdb',main))
+        sraw_data = inner_functions.combine_lists(raw_data)
+        for m in range(total_items):
+            stuff_list.append(self.read(dbfile, [sraw_data[m][0], sraw_data[m][1], sraw_data[m][2]]))
+        ata_list.append(inner_functions.add_data_to_inner_lists(sraw_data,stuff_list))
+        data_list = inner_functions.combine_lists(ata_list)
+        try:
+            # Create a dictionary to keep track of sheets already created.
+            created_sheets = {}
+
+            if os.path.isfile(filepath):
+                workbook = openpyxl.load_workbook(filepath)
+            else:
+                workbook = openpyxl.Workbook()
+                workbook = openpyxl.Workbook()
+                std = workbook['Sheet']
+                workbook.remove(std)
+            for item in range(len(data_list)):
+                if len(data_list[item]) == 4:
+                    table_id, col_id_0, row_id_0, value = data_list[item]
+                    table_name = self.getname(dbfile, table_id)  # get the name of the table.
+                    if table_name not in created_sheets:
+                        if table_name not in workbook.sheetnames:
+                            workbook.create_sheet(table_name)
+                        created_sheets[table_name] = True
+
+                    if table_name in workbook.sheetnames:
+                        sheet = workbook[table_name]
+                        col_id_1 = col_id_0 + 1
+                        row_id_1 = row_id_0 + 1
+                        sheet.cell(row=row_id_1, column=col_id_1, value=value)
+                    else:
+                        print(f"Warning: Sheet '{table_name}' not found.")
+                else:
+                    print(f"Warning: Invalid data item {item}. Expected [table_id, column_id, row_id, value].")
+            workbook.save(filepath)
+            print(f"Data inserted into '{filepath}'.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 table_data = table_data_class()
 class other_class():
     def __init__(self):
@@ -561,34 +691,4 @@ class other_class():
                 return True
             else:
                 return False
-    def FIAM(self,file:str):
-        tables_number = table_data.numbertables(file,plogic=False)
-        containers_number = container_data.numbercontainers(file,plogic=False)
-        table_info = []
-        container_info = []
-        for i in range(tables_number):
-            info = table_data.totaltable(file,i)
-            c = 0
-            r = 0
-            while True:
-                while True:
-                    if c <= info[0]:
-                        table_info.append([i,c,r])
-                        c = c + 1
-                    else:
-                        break
-                if r <= info[1]:
-                    r = r + 1
-                else:
-                    break
-        for i in range(containers_number):
-            info = container_data.numbersectors(file,i)
-            s = 0
-            while True:
-                if s <= info:
-                    container_info.append([i,s])
-                    s = s + 1
-                else:
-                    break
-        print('tables',table_info,', containers',container_info)
 other = other_class()
