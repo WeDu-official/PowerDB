@@ -147,7 +147,7 @@ class container_data_class():
             address = []
         containerid = address[0]
         sectorid = address[1]
-        info = self.numbersectors('main.pdb',0)
+        info = self.numbersectors(file,0)
         if showrelational:
             print(sectorid,info)
         makecontainer = open(file, 'a')
@@ -399,7 +399,7 @@ class table_data_class():
         columnid = address[1]
         rowid = address[2]
         maketable = open(file, 'a')
-        info = self.totaltable('main.pdb', tableid)
+        info = self.totaltable(file, tableid)
         if showmatrix:
             print(columnid,info[0])
             print(rowid,info[1])
@@ -606,7 +606,7 @@ class table_data_class():
         raw_data = []
         stuff_list = []
         for main in range(num_sheets):
-            raw_data.append(self.all_addresses_list('main.pdb',main))
+            raw_data.append(self.all_addresses_list(dbfile,main))
         sraw_data = inner_functions.combine_lists(raw_data)
         for m in range(total_items):
             stuff_list.append(self.read(dbfile, [sraw_data[m][0], sraw_data[m][1], sraw_data[m][2]]))

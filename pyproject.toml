@@ -4,11 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "PowerDB"
-version = "2.1.4"
+version = "2.1.5"
 authors = [
   { name="WeDu-official", email="fplu.the.founder@gmail.com" },
 ]
-
+dependencies = [
+    "openpyxl >= 3.1.5"
+]
 description = "a DBM which is fast & easy to use for local small scale databases"
 readme = "README.md"
 requires-python = ">=3.8"

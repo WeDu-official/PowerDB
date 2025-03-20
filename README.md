@@ -1,6 +1,6 @@
 <img alt="logo" src="https://github.com/user-attachments/assets/0a9537bb-746b-44b5-883b-2dcddc65d544" width=300/>
 
-**PowerDB 2.1.0** a DBM which is fast & easy to use for local small scale databases
+**PowerDB 2.1.5** a DBM which is fast & easy to use for local small scale databases
 
 <H3>~NEW RELEASE FEATURES(completely rebuild and new):</H3>
 
@@ -27,6 +27,7 @@
 * 4-YOU CAN GET THE NUMBER OF COLUMNS AND ROWS IN A TABLE ALONE WITHOUT GETTING BOTH(LIKE THE .totaltable FUNCTION)
 * 5-YOU CAN GET THE ADDRESS OF EVERY SINGLE ITEMS IN THE TABLE AND THEIR NUMBER AND EVEN GROUP THEM USING THE INDEX
 * 6-improvements in table\container creation and many more inner_functions were added
+* 7-corrections for our stupid mistakes
 
 **NOTE: THE PowerDB ONLY work in almost any operating system(\*1) which can support python 3.8 and above**
 
@@ -41,7 +42,7 @@ to help developers esp. **single developers** to deal with the database or stori
 
 to install the latest stable version use the following command
 
-<code>pip install PowerDB==2.1.4</code>
+<code>pip install PowerDB==2.1.5</code>
 
 ## Contribute
 
