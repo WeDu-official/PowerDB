@@ -217,7 +217,7 @@ class container_data_class():
             else:
                 break
         return data
-    def numbercontainers(self, file: str,plogic:bool=True):
+    def numbercontainers(self, file: str,plogic:bool=False):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
         scancontainers.close()
@@ -225,7 +225,7 @@ class container_data_class():
             return inner_functions.count_occurrences('$<', r)
         else:
             return inner_functions.count_occurrences('$<', r)-1
-    def numbersectors(self, file: str,containerid:int,plogic:bool=True):
+    def numbersectors(self, file: str,containerid:int,plogic:bool=False):
         scancontainers = open(file, 'r')
         r = scancontainers.read()
         scancontainers.close()
@@ -318,7 +318,7 @@ class table_data_class():
                 inner_functions.get_the_word_inbetween(data, '<', '^')) + 1
         else:
             return -1 if plogic else 0
-    def hcolumn(self,file:str,tableid:int,plogic:bool=True,sprow:int=-1):
+    def hcolumn(self,file:str,tableid:int,plogic:bool=False,sprow:int=-1):
         scantables = open(file, 'r')
         r = scantables.read()
         scantables.close()
@@ -346,7 +346,7 @@ class table_data_class():
                 return max(raw)
             except ValueError:
                 return -1
-    def hrow(self,file:str,tableid:int,plogic:bool=True,sprow:int=-1):
+    def hrow(self,file:str,tableid:int,plogic:bool=False,sprow:int=-1):
         scantables = open(file, 'r')
         r = scantables.read()
         scantables.close()
@@ -382,15 +382,15 @@ class table_data_class():
             return inner_functions.count_occurrences('&<',r)
         else:
             return inner_functions.count_occurrences('&<', r)-1
-    def numbercolumns(self,file:str,address=None,plogic:bool=True):
+    def numbercolumns(self,file:str,address=None,plogic:bool=False):
         return self.hcolumn(file, address[0], plogic, address[1])
-    def numberrows(self,file:str,address=None,plogic:bool=True):
+    def numberrows(self,file:str,address=None,plogic:bool=False):
         return self.hrow(file, address[0], plogic, address[1])
-    def totalcolumns(self,file:str,tableid:int,plogic:bool=True):
+    def totalcolumns(self,file:str,tableid:int,plogic:bool=False):
         return self.hcolumn(file, tableid, plogic)
     def totalrows(self,file:str,tableid:int,plogic:bool=False):
         return self.hrow(file, tableid, plogic)
-    def totaltable(self,file:str,tableid:int,plogic:bool=True):
+    def totaltable(self,file:str,tableid:int,plogic:bool=False):
         return [self.hcolumn(file, tableid, plogic), self.hrow(file, tableid, plogic)]
     def insert(self,file:str,data:str,address=None,showmatrix:bool=False):
         if address is None:

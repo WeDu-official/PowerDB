@@ -1,6 +1,6 @@
 <img alt="logo" src="https://github.com/user-attachments/assets/0a9537bb-746b-44b5-883b-2dcddc65d544" width=300/>
 
-**PowerDB 2.1.5** a DBM which is fast & easy to use for local small scale databases
+**PowerDB 2.1.6** a DBM which is fast & easy to use for local small scale databases
 
 <H3>~NEW RELEASE FEATURES(completely rebuild and new):</H3>
 
@@ -42,7 +42,7 @@ to help developers esp. **single developers** to deal with the database or stori
 
 to install the latest stable version use the following command
 
-<code>pip install PowerDB==2.1.5</code>
+<code>pip install PowerDB</code>
 
 ## Contribute
 
