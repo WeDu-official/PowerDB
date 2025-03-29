@@ -1,6 +1,6 @@
 <img alt="logo" src="https://github.com/user-attachments/assets/0a9537bb-746b-44b5-883b-2dcddc65d544" width=300/>
 
-**PowerDB 2.1.6** a DBM which is fast & easy to use for local small scale databases
+**PowerDB** a DBM which is fast & easy to use for local small scale databases
 
 <H3>~NEW RELEASE FEATURES(completely rebuild and new):</H3>
 

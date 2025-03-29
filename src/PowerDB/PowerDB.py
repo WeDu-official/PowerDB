@@ -1,4 +1,5 @@
 import os
+import re
 import openpyxl
 class inner_functions_class():
     def __init__(self):
@@ -15,37 +16,28 @@ class inner_functions_class():
         count = 0
         word_len = len(word)
         text_len = len(string)
-
-        for i in range(text_len - word_len + 1):  # Iterate through possible start positions
+        for i in range(text_len - word_len + 1):
             if string[i:i + word_len] == word:
                 count += 1
-
         return count
-
     def get_line_of_phrase_in_text(self,text, phrase):
         lines = text.splitlines()
-
         for line in lines:
             if phrase in line:
-                # Replace all occurrences of the phrase with an empty string
                 line_without_phrase = line.replace(phrase, "")
-                return line_without_phrase.strip()  # Remove extra whitespace
-
+                return line_without_phrase.strip()
         return None
-
     def modify_line_containing_word(self,text, word, new_line_content):
         lines = text.splitlines()
-        line_number = -1  # Initialize to -1 to indicate word not found yet
-
+        line_number = -1
         for i, line in enumerate(lines):
             if word in line:
                 line_number = i
-
         if line_number != -1:
             lines[line_number] = new_line_content
-            return "\n".join(lines)  # Rejoin the lines with newline characters
+            return "\n".join(lines)
         else:
-            return text  # Return original text if word not found
+            return text
     def group_by_element(self,input_list,index):
         grouped_list = {}
         for sublist in input_list:
@@ -57,7 +49,6 @@ class inner_functions_class():
     def add_data_to_inner_lists(self,main_list,second_list):
         result = []
         second_index = 0
-
         for inner_item in main_list:
             if second_index < len(second_list):
                 result.append(inner_item + [second_list[second_index]])
@@ -65,9 +56,7 @@ class inner_functions_class():
             else:
                 result.append(inner_item + [None])
                 print("Warning: second_list is shorter than expected. Filling with None.")
-
         return result
-
     def combine_lists(self,input_list):
         output_list = []
         for inner_list in input_list:
@@ -90,13 +79,18 @@ class create_class():
         r = scancontainers.read()
         scancontainers.close()
         num = inner_functions.count_occurrences('$<', r)
-        makecontainer = open(file, 'a')
         if f',{name}>' not in r:
             makecontainer = open(file, 'a')
             if num == 0:
-                makecontainer.write(f"\n$<0,{name}>")
+                if r.endswith('\n'):
+                   makecontainer.write(f"$<0,{name}>")
+                else:
+                   makecontainer.write(f"\n$<0,{name}>")
             else:
-                makecontainer.write(f"\n$<{num},{name}>")
+                if r.endswith('\n'):
+                   makecontainer.write(f"$<{num},{name}>")
+                else:
+                   makecontainer.write(f"\n$<{num},{name}>")
             makecontainer.close()
         else:
             pass
@@ -108,9 +102,15 @@ class create_class():
         if f'^{name}>' not in r:
             makecontainer = open(file, 'a')
             if num == 0:
-                makecontainer.write(f"\n&<0^{name}>")
+                if r.endswith('\n'):
+                   makecontainer.write(f"&<0^{name}>")
+                else:
+                    makecontainer.write(f"\n&<0^{name}>")
             else:
-                makecontainer.write(f"\n&<{num}^{name}>")
+                if r.endswith('\n'):
+                   makecontainer.write(f"&<{num}^{name}>")
+                else:
+                    makecontainer.write(f"\n&<{num}^{name}>")
             makecontainer.close()
         else:
             pass
@@ -151,8 +151,14 @@ class container_data_class():
         if showrelational:
             print(sectorid,info)
         makecontainer = open(file, 'a')
+        scancontainers = open(file, 'r')
+        r = scancontainers.read()
+        scancontainers.close()
         if not other.check(file,'sector',[containerid,sectorid]):
             if sectorid - info <= 1:
+               if r.endswith('\n'):
+                  makecontainer.write(f"!<[{containerid},{sectorid}],{data}>!")
+               else:
                   makecontainer.write(f"\n!<[{containerid},{sectorid}],{data}>!")
         else:
             pass
@@ -318,62 +324,56 @@ class table_data_class():
                 inner_functions.get_the_word_inbetween(data, '<', '^')) + 1
         else:
             return -1 if plogic else 0
-    def hcolumn(self,file:str,tableid:int,plogic:bool=False,sprow:int=-1):
+    def hcolumn(self, file: str, tableid: int, plogic: bool = False, sprow: int = -1):
         scantables = open(file, 'r')
         r = scantables.read()
         scantables.close()
-        i = 0
-        raw = []
-        while True:
-            if sprow == -1:
-                if f'~<[{tableid};{i}?' in r:
-                    raw.append(i)
-                else:
-                    break
-            else:
-                if f'~<[{tableid};{i}?{sprow}]' in r:
-                    raw.append(i)
-                else:
-                    break
-            i = i + 1
-        if plogic is False:
-            try:
-                return max(raw) + 1
-            except ValueError:
-                return 0
+        if sprow == -1:
+            pattern = rf'~<\[{tableid};(\d+)\?'
         else:
-            try:
-                return max(raw)
-            except ValueError:
+            pattern = rf'~<\[{tableid};(\d+)\?{sprow}\]'
+        matches = re.findall(pattern, r)
+        if not matches:
+            if plogic:
                 return -1
-    def hrow(self,file:str,tableid:int,plogic:bool=False,sprow:int=-1):
+            else:
+                return 0
+        try:
+            max_col = max(map(int, matches))
+            if plogic:
+                return max_col
+            else:
+                return max_col + 1
+        except ValueError:
+            if plogic:
+                return -1
+            else:
+                return 0
+    def hrow(self, file: str, tableid: int, plogic: bool = False, sprow: int = -1):
         scantables = open(file, 'r')
         r = scantables.read()
         scantables.close()
-        i = 0
-        raw = []
-        while True:
-            if sprow == -1:
-                if f'~<[{tableid};' in r and f'?{i}]' in r:
-                    raw.append(i)
-                else:
-                    break
-            else:
-                if f'~<[{tableid};{sprow}?{i}]' in r:
-                    raw.append(i)
-                else:
-                    break
-            i = i + 1
-        if plogic is False:
-            try:
-                return max(raw)+1
-            except ValueError:
-                return 0
+        if sprow == -1:
+            pattern = rf'~<\[{tableid};\d+\?(\d+)]'
         else:
-            try:
-                return max(raw)
-            except ValueError:
+            pattern = rf'~<\[{tableid};{sprow}\?(\d+)]'
+        matches = re.findall(pattern, r)
+        if not matches:
+            if plogic:
                 return -1
+            else:
+                return 0
+        try:
+            max_row = max(map(int, matches))
+            if plogic:
+                return max_row
+            else:
+                return max_row + 1
+        except ValueError:
+            if plogic:
+                return -1
+            else:
+                return 0
     def numbertables(self,file:str,plogic:bool=True):
         scantables = open(file, 'r')
         r = scantables.read()
@@ -399,6 +399,10 @@ class table_data_class():
         columnid = address[1]
         rowid = address[2]
         maketable = open(file, 'a')
+        scantables = open(file, 'r')
+        r = scantables.read()
+        scantables.close()
+        if r.endswith('\n\n'): r = r[:-1]
         info = self.totaltable(file, tableid)
         if showmatrix:
             print(columnid,info[0])
@@ -406,7 +410,10 @@ class table_data_class():
         if not other.check(file,'cell',[tableid,columnid,rowid]):
             if columnid - info[0] <= 1:
                if rowid - info[1] <= 1:
-                  maketable.write(f"\n~<[{tableid};{columnid}?{rowid}],{data}>~")
+                  if r.endswith('\n'):
+                     maketable.write(f"~<[{tableid};{columnid}?{rowid}],{data}>~")
+                  else:
+                     maketable.write(f"\n~<[{tableid};{columnid}?{rowid}],{data}>~")
         else:
             pass
         maketable.close()
@@ -613,7 +620,6 @@ class table_data_class():
         ata_list.append(inner_functions.add_data_to_inner_lists(sraw_data,stuff_list))
         data_list = inner_functions.combine_lists(ata_list)
         try:
-            # Create a dictionary to keep track of sheets already created.
             created_sheets = {}
 
             if os.path.isfile(filepath):
@@ -626,7 +632,7 @@ class table_data_class():
             for item in range(len(data_list)):
                 if len(data_list[item]) == 4:
                     table_id, col_id_0, row_id_0, value = data_list[item]
-                    table_name = self.getname(dbfile, table_id)  # get the name of the table.
+                    table_name = self.getname(dbfile, table_id)
                     if table_name not in created_sheets:
                         if table_name not in workbook.sheetnames:
                             workbook.create_sheet(table_name)
