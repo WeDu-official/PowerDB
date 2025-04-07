@@ -1,38 +1,22 @@
 <img alt="logo" src="https://github.com/user-attachments/assets/0a9537bb-746b-44b5-883b-2dcddc65d544" width=300/>
 
-**PowerDB** a DBM which is fast & easy to use for local small scale databases
+**PowerDB** a PORTABLE DBM which is fast & easy to use for local small/medium scale databases
 
 <H3>~NEW RELEASE FEATURES(completely rebuild and new):</H3>
 
 **AN INSANE AMOUNT OF HARD WORK AND SWEAT AND BLOOD WENT INTO THIS PROJECT!**
-(2.0 UPDATE)
-* 1-NAMING SYSTEM FOR CONTAINERS AND TABLES *1
-* 2-DROPPING CONTAINERS AND TABLES
+
+(2.2 UPDATES SERIES)
+* 1-ALL PLATFORMS SUPPORT(POWERDB BECAME PORTABLE)
+* 2-BYTES SUPPORT
 * 3-WHOLE NEW SYSTEM FOR SEARCHING AND I/O FROM THE DB
 * 5-NEW ERRORS SYSTEM AND HANDLING
-* 6-DELETE,EDIT,INSERT,READ AND OTHER FUNCTIONALITIES GOT IMPROVED
-* 7-NEAR 1000000X OR EVEN FASTER PERFORMANCE FOR FUNCTION WHICH WERE HEAVY
-* 8-REWRITTEN SYNTAX
+* 6-ALL FUNCTIONALITIES GOT IMPROVED
+* 7-INSANE PERFORMANCE AND BEING MUCH FASTER THAN BEFORE
+* 8-NEW IN-SYSTEM FUNCTIONS FOR ALL KINDS OF THINGS(FILEPATH GLOBALIZING,PERMISSIONS ETC...)
 * 9-AN INSANE AMOUNT OF CORRECTIONS,BUGFIXES,MANAGEMENT 
 
-**"TO TURN A STICK BARELY STANDING IN IDEAL CONDITIONS INTO AN UNSTOPPABLE BEAST WHICH CAN HANDLE PROBLEMS ALL TIME"**
-
-<code>*1:you can use the .getid function with the name to get its id and use it</code>
-
-<h5>(2.1 UPDATE)</h5>
-
-* 1-YOU CAN EXPORT ALL THE TABLES INTO AN EXCEL FILE
-* 2-YOU CAN GET NAME OF TABLE/CONTAINER USING THE .getname (table_data/container_data) FUNCTION
-* 3-YOU CAN CHANGE NAME OF TABLE/CONTAINER USING THE .change_name (table_data/container_data) FUNCTION
-* 4-YOU CAN GET THE NUMBER OF COLUMNS AND ROWS IN A TABLE ALONE WITHOUT GETTING BOTH(LIKE THE .totaltable FUNCTION)
-* 5-YOU CAN GET THE ADDRESS OF EVERY SINGLE ITEMS IN THE TABLE AND THEIR NUMBER AND EVEN GROUP THEM USING THE INDEX
-* 6-improvements in table\container creation and many more inner_functions were added
-* 7-corrections for our stupid mistakes
-
-**NOTE: THE PowerDB ONLY work in almost any operating system(\*1) which can support python 3.8 and above**
-
-**\*1: THE PowerDB wasn't tested on any operating system expect window
-and the 32-bit version of it wasn't tested, only window 64-bit operating system was tested**
+**NOTE: THE PowerDB work on any operating system(\*1) which can support python 3.8 and above(just like most operating systems)**
 
 **PowerDB** deals with esp. **local small scale databases** very easily , and many operations in PowerDB are super easy to do
 and everything is automatic
