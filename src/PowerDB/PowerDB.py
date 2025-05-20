@@ -1,8 +1,12 @@
+#PowerDB VERSION 2.2.3.2
+#Created solely by WeDu, published in 5/20/25
 import re
 import stat
 import os
 import sys
 import openpyxl
+#requirements: standard modules + openpyxl(*1)
+# *1 : third party library(for exporting .pdb tables into Excel sheet)
 class InnerFunctions:
     def __init__(self):
         pass
@@ -759,9 +763,12 @@ class table_data_class:
             return -1 if plogic else 0
     def hcolumn(self, file: str, tableid: int, plogic: bool = False, sprow: int = -1):
         try:
-            with open(file, 'r') as scantables:
-                r = scantables.read()
-        except FileNotFoundError:
+            rawp = os.path.abspath(os.path.normpath(file))
+            f = open(rawp, 'rb')
+            rawd = f.read()
+            f.close()
+            r = rawd.decode('utf-8', errors='surrogateescape')
+        except (FileNotFoundError,OSError,PermissionError):
             return -1 if plogic else 0
         if sprow == -1:
             pattern = rf'~<\[{tableid};(\d+)\?'
@@ -777,9 +784,12 @@ class table_data_class:
             return -1 if plogic else 0
     def hrow(self, file: str, tableid: int, plogic: bool = False, sprow: int = -1):
         try:
-            with open(file, 'r') as scantables:
-                r = scantables.read()
-        except FileNotFoundError:
+            rawp = os.path.abspath(os.path.normpath(file))
+            f = open(rawp, 'rb')
+            rawd = f.read()
+            f.close()
+            r = rawd.decode('utf-8', errors='surrogateescape')
+        except (FileNotFoundError, OSError, PermissionError):
             return -1 if plogic else 0
         if sprow == -1:
             pattern = rf'~<\[{tableid};\d+\?(\d+)]'
