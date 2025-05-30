@@ -1,5 +1,5 @@
-#PowerDB VERSION 2.2.4
-#Created solely by WeDu, published in 5/20/29
+#PowerDB VERSION 2.2.5.2
+#Created solely by WeDu, published in 5/30/25
 import re
 import stat
 import os
@@ -503,12 +503,16 @@ class container_data_class:
         try:
             file_content_bytes = shared_functions.read_file_bytes(filepath)
             file_content_str = file_content_bytes.decode('utf-8', errors='surrogateescape')
-            file_content_str = file_content_str.replace('\r\n', '\n')  # Normalize line endings
-            pattern = rf"(?s)\$<{containerid},[^>]*>\n(?:!<\[{containerid},\d+],(?:(?!>!).)*?>!(?:\n(?!<{containerid},).*)?)*"
-            updated_content = re.sub(pattern, '', file_content_str, flags=re.DOTALL)
+            file_content_str = file_content_str.replace('\r\n', '\n')
+            container_name_pattern = rf"\$<{containerid},[^>]*>!\n?"
+            updated_content = re.sub(container_name_pattern, '', file_content_str)
+            sector_pattern = rf"(?s)!<\[{containerid},\d+],(?:(?!>!).)*?>!\n?"
+            updated_content = re.sub(sector_pattern, '', updated_content)
             lines = updated_content.split('\n')
             non_empty_lines = [line for line in lines if line.strip() != '']
             final_content = '\n'.join(non_empty_lines)
+            if final_content and not final_content.endswith('\n'):
+                final_content += '\n'
             shared_functions.write_file_bytes(filepath, final_content.encode('utf-8', errors='surrogateescape'))
         except OSError as e:
             print(f"OS Error: {e}")
@@ -565,6 +569,48 @@ class container_data_class:
             except OSError:
                 return False
         return False
+    def reindex_sections(self, file, containerid):
+        if not isinstance(file, str):
+            raise TypeError("file must be a string.")
+        if not isinstance(containerid, int):
+            raise TypeError("containerid must be an integer.")
+        if containerid < 0:
+            raise ValueError("containerid must be >= 0")
+        filepath = file
+        if not file.lower().endswith('.pdb'):
+            filepath = f'{file}.pdb'
+        filepath = shared_functions.normalize_path(filepath)
+        if not shared_functions.check_file_permissions(filepath):
+            raise PermissionError(f"Insufficient permissions to I/O file: '{filepath}'")
+        try:
+            container_name = self.getname(filepath, containerid)
+            if container_name is None:
+                print(f"Error: Container with ID {containerid} not found. Cannot reindex.")
+                return
+            original_data_values = self.readsectors(filepath, containerid)
+            print(f"DEBUG: original_data_values content: {original_data_values}")
+            self.drop(filepath, containerid)
+            try:
+                new_container_line = f"$<{containerid},{container_name}>!\n"
+                current_content = shared_functions.read_file_bytes(filepath).decode('utf-8', errors='surrogateescape')
+                if current_content and not current_content.endswith('\n'):
+                    current_content += '\n'
+                shared_functions.append_file_bytes(filepath,
+                                                   new_container_line.encode('utf-8', errors='surrogateescape'))
+            except OSError as e:
+                print(f"OS Error inserting container definition: {e}")
+                return
+            new_sector_id = 0
+            for data_value in original_data_values:
+                self.insert(filepath, data_value, address=[containerid, new_sector_id])
+                new_sector_id += 1
+            print(f"Sections for container {containerid} reindexed successfully.")
+        except ValueError as e:
+            print(f"Error during reindexing: Data format issue. {e}. Please check the content returned by readsectors.")
+        except OSError as e:
+            print(f"OS Error during reindexing: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred during reindexing: {e}")
 container_data = container_data_class()
 class table_data_class:
     def __init__(self):
@@ -1150,7 +1196,6 @@ class table_data_class:
             file_content_str = file_content_str.replace('\r\n', '\n')  # Normalize line endings
             pattern = rf"(?s)~<\[{tableid};{columnid}\?{rowid}],(.*?)>~"
             updated_content = re.sub(pattern, '', file_content_str)
-            # Remove empty lines
             lines = updated_content.split('\n')  # changed from os.linesep
             non_empty_lines = [line for line in lines if line.strip() != '']
             final_content = '\n'.join(non_empty_lines)  # changed from os.linesep
@@ -1184,7 +1229,9 @@ class table_data_class:
             # Remove empty lines that were created by re.sub
             lines = updated_content.split('\n')  # changed from os.linesep
             non_empty_lines = [line for line in lines if line.strip() != '']
-            final_content = '\n'.join(non_empty_lines)  # changed from os.linesep
+            final_content = '\n'.join(non_empty_lines)
+            if final_content and not final_content.endswith('\n'):
+                final_content += '\n'
             shared_functions.write_file_bytes(filepath, final_content.encode('utf-8', errors='surrogateescape'))
         except OSError as e:
             raise OSError(f"OS Error: {e}")
@@ -1265,6 +1312,93 @@ class table_data_class:
         except Exception as e:
             print(f"An unexpected error occurred: {e}", file=sys.stderr)
             raise
+    def reindex_table(self, file: str, tableid: int, modeCR: bool):
+        if not isinstance(file, str):
+            raise TypeError("file must be a string.")
+        if not isinstance(tableid, int):
+            raise TypeError("tableid must be an integer.")
+        if not isinstance(modeCR, bool):
+            raise ValueError("mode must be True or False.")
+        start_column_index = 0
+        start_row_index = 0
+        filepath = file
+        if not filepath.lower().endswith('.pdb'):
+            filepath = f'{filepath}.pdb'
+        filepath = self.normalize_path(filepath)
+        if not shared_functions.check_file_permissions(filepath):
+            raise PermissionError(f"Insufficient permissions to I/O file: '{filepath}'")
+        try:
+            table_name = self.getname(filepath, tableid)
+            if table_name is None:
+                print(f"Error: Table with ID {tableid} not found. Cannot reindex.")
+                return
+            all_addresses = self.all_addresses_list(filepath, tableid)
+            if not all_addresses:
+                print(f"No data found for table {tableid}. Reindexing skipped.")
+                self.drop(filepath, tableid)
+                current_content_bytes = shared_functions.read_file_bytes(filepath)
+                current_content_str = current_content_bytes.decode('utf-8', errors='surrogateescape')
+                if not current_content_str.startswith("#POWER_DB"):
+                    current_content_str = "#POWER_DB\n" + current_content_str
+                current_content_str = re.sub(rf"&<{tableid}\^[^>]*>\n?", "", current_content_str)
+                if current_content_str and not current_content_str.endswith('\n'):
+                    current_content_str += '\n'
+                new_table_line = f"&<{tableid}^{table_name}>\n"
+                final_content_str = current_content_str + new_table_line
+                shared_functions.write_file_bytes(filepath, final_content_str.encode('utf-8', errors='surrogateescape'))
+                return
+            collected_cells_data = []
+            for addr in all_addresses:
+                col_id = addr[1]
+                row_id = addr[2]
+                data = self.read(filepath, address=[tableid, col_id, row_id])
+                collected_cells_data.append({'col': col_id, 'row': row_id, 'data': data})
+            self.drop(filepath, tableid)
+            current_content_bytes = shared_functions.read_file_bytes(filepath)
+            current_content_str = current_content_bytes.decode('utf-8', errors='surrogateescape')
+            if not current_content_str.startswith("#POWER_DB"):
+                current_content_str = "#POWER_DB\n" + current_content_str
+            current_content_str = re.sub(rf"&<{tableid}\^[^>]*>\n?", "", current_content_str)
+            if current_content_str and not current_content_str.endswith('\n'):
+                current_content_str += '\n'
+            new_table_line = f"&<{tableid}^{table_name}>\n"
+            final_content_str = current_content_str + new_table_line
+            shared_functions.write_file_bytes(filepath, final_content_str.encode('utf-8', errors='surrogateescape'))
+            if modeCR:
+                sorted_cells = sorted(collected_cells_data, key=lambda x: (x['col'], x['row']))
+                unique_cols = sorted(list(set(c['col'] for c in sorted_cells)))
+                col_id_map = {old_col: new_idx + start_column_index for new_idx, old_col in enumerate(unique_cols)}
+                current_row_for_new_col = {}
+                for cell in sorted_cells:
+                    original_col = cell['col']
+                    data = cell['data']
+                    new_col = col_id_map[original_col]
+                    if new_col not in current_row_for_new_col:
+                        current_row_for_new_col[new_col] = start_row_index
+                    new_row = current_row_for_new_col[new_col]
+                    self.insert(filepath, data, address=[tableid, new_col, new_row])
+                    current_row_for_new_col[new_col] += 1
+            else:
+                sorted_cells = sorted(collected_cells_data, key=lambda x: (x['row'], x['col']))
+                unique_rows = sorted(list(set(c['row'] for c in sorted_cells)))
+                row_id_map = {old_row: new_idx + start_row_index for new_idx, old_row in enumerate(unique_rows)}
+                current_col_for_new_row = {}
+                for cell in sorted_cells:
+                    original_row = cell['row']
+                    data = cell['data']
+                    new_row = row_id_map[original_row]
+                    if new_row not in current_col_for_new_row:
+                        current_col_for_new_row[new_row] = start_column_index
+                    new_col = current_col_for_new_row[new_row]
+                    self.insert(filepath, data, address=[tableid, new_col, new_row])
+                    current_col_for_new_row[new_row] += 1
+            print(f"Table {tableid} reindexed successfully in '{"column to row" if modeCR is True else "row to column"}' mode.")
+        except ValueError as e:
+            print(f"Error during reindexing: {e}")
+        except OSError as e:
+            print(f"OS Error during reindexing: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred during reindexing: {e}")
 table_data = table_data_class()
 class OtherClass:
     def __init__(self):
