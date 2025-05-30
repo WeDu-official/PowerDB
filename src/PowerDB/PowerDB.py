@@ -1,4 +1,4 @@
-#PowerDB VERSION 2.2.5.2
+#PowerDB VERSION 2.2.5.3
 #Created solely by WeDu, published in 5/30/25
 import re
 import stat
@@ -336,7 +336,7 @@ class container_data_class:
             r = shared_functions.read_file_bytes(filepath).decode('utf-8', errors='surrogateescape')
             if self._check(filepath, 'sector', [containerid, sectorid]):
                 pattern = rf'(!<\[{containerid},{sectorid}],)([^>!]*)>!'
-                replacement = rf'\g{data}>!'
+                replacement = rf'!<[{containerid},{sectorid}],{data}>!'
                 new_content = re.sub(pattern, replacement, r, count=1).encode('utf-8', errors='surrogateescape')
                 shared_functions.write_file_bytes(filepath, new_content)
         except OSError as e:
@@ -363,8 +363,8 @@ class container_data_class:
             file_content_bytes = shared_functions.read_file_bytes(filepath)
             file_content_str = file_content_bytes.decode('utf-8', errors='surrogateescape')
             file_content_str = file_content_str.replace('\r\n','\n') # Normalize line endings
-            pattern = rf"&<{containerid}\^.*?\n" # changed from os.linesep
-            replacement = f"&<{containerid}^{new_name}>\n" # changed from os.linesep
+            pattern = rf"\$<{containerid},([^>]*)>"
+            replacement = f"$<{containerid},{new_name}>\n"
             updated_content = re.sub(pattern, replacement, file_content_str).encode('utf-8', errors='surrogateescape')
             lines = updated_content.splitlines()
             non_empty_lines = [line for line in lines if line.strip()]
@@ -504,7 +504,7 @@ class container_data_class:
             file_content_bytes = shared_functions.read_file_bytes(filepath)
             file_content_str = file_content_bytes.decode('utf-8', errors='surrogateescape')
             file_content_str = file_content_str.replace('\r\n', '\n')
-            container_name_pattern = rf"\$<{containerid},[^>]*>!\n?"
+            container_name_pattern = rf"\$<{containerid},[^>]*>\n?"
             updated_content = re.sub(container_name_pattern, '', file_content_str)
             sector_pattern = rf"(?s)!<\[{containerid},\d+],(?:(?!>!).)*?>!\n?"
             updated_content = re.sub(sector_pattern, '', updated_content)
@@ -591,10 +591,11 @@ class container_data_class:
             print(f"DEBUG: original_data_values content: {original_data_values}")
             self.drop(filepath, containerid)
             try:
-                new_container_line = f"$<{containerid},{container_name}>!\n"
+                new_container_line = f"$<{containerid},{container_name}>\n"
                 current_content = shared_functions.read_file_bytes(filepath).decode('utf-8', errors='surrogateescape')
                 if current_content and not current_content.endswith('\n'):
                     current_content += '\n'
+                print(new_container_line)
                 shared_functions.append_file_bytes(filepath,
                                                    new_container_line.encode('utf-8', errors='surrogateescape'))
             except OSError as e:
