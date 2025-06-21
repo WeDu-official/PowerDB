@@ -1,5 +1,5 @@
-#PowerDB VERSION 2.2.5.3
-#Created solely by WeDu, published in 5/30/25
+#PowerDB VERSION 2.2.5.4
+#Created solely by WeDu, published in 6/21/25
 import re
 import stat
 import os
@@ -130,7 +130,10 @@ class CreateOperations:
         if not os.path.exists(filepath):
             c = open(filepath,'x')
             c.close()
-        shared_functions.write_file_bytes(filepath,b'#POWER_DB')
+            shared_functions.write_file_bytes(filepath,b'#POWER_DB') # <- THE FIX IN 2.2.5.4 UPDATE,
+            """ the problem was that if file does exist instead of being ignored the entire file would be overwritten and all data
+            in it would be removed and the entire file content would be '#POWER_DB', and now after the correction ONLY when the
+            file doesn't exist the file would be created and then the tag would be inserted in it"""
     @staticmethod
     def make_container(file_path, name):
         if not isinstance(file_path, str):
